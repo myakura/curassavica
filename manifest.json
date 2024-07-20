@@ -1,0 +1,20 @@
+{
+	"manifest_version": 3,
+	"name": "Summarizer",
+	"version": "1.0",
+	"description": "Summarize text.",
+	"permissions": ["activeTab"],
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"css": ["curassavica_content.css"],
+			"js": ["curassavica_content.js"]
+		}
+	],
+	"web_accessible_resources": [
+		{
+			"resources": ["curassavica_content.css", "curassavica_content.js"],
+			"matches": ["<all_urls>"]
+		}
+	]
+}

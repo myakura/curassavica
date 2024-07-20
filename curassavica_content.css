@@ -1,0 +1,27 @@
+@property --button-position-top {
+	syntax: "<length>";
+	inherits: false;
+	initial-value: 0px;
+}
+
+@property --button-position-left {
+	syntax: "<length>";
+	inherits: false;
+	initial-value: 0px;
+}
+
+@layer extension {
+	#summarize-button,
+	#popover {
+		all: revert !important;
+	}
+
+	#summarize-button {
+		position: absolute !important;
+		top: var(--button-position-top) !important;
+		left: var(--button-position-left) !important;
+	}
+
+	#popover {
+	}
+}
