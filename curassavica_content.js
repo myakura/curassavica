@@ -12,9 +12,11 @@ async function summarizeText(text) {
 		const prompt = `
 Summarize the text:
 
-###text###
+user:
 ${text}
-`.trim();
+
+ai:
+`;
 
 		const response = await session.prompt(prompt);
 		return response;
