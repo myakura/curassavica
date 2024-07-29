@@ -57,11 +57,13 @@ function handleSelectionChange() {
 
 function init() {
 	const popover = document.createElement('div');
+	popover.classList.add('curassavica-reset');
 	popover.id = 'popover';
 	popover.setAttribute('popover', 'manual');
 	document.body.append(popover);
 
 	const summarize = document.createElement('button');
+	summarize.classList.add('curassavica-reset');
 	summarize.textContent = 'Summarize';
 	summarize.hidden = true;
 	summarize.id = 'summarize-button';
@@ -75,6 +77,7 @@ function init() {
 	});
 
 	const debug = document.createElement('div');
+	debug.classList.add('curassavica-reset');
 	debug.style.all = 'revert';
 	debug.style.position = 'fixed';
 	debug.style.right = '4px';

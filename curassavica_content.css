@@ -10,11 +10,9 @@
 	initial-value: 0px;
 }
 
-@layer extension {
-	#summarize-button,
-	#popover {
-		all: revert !important;
-	}
+.crassavica-reset {
+	all: revert;
+}
 
 #summarize-button {
 	background: linear-gradient(#fffd, #fffd) padding-box,
