@@ -16,12 +16,50 @@
 		all: revert !important;
 	}
 
-	#summarize-button {
-		position: absolute !important;
-		top: var(--button-position-top) !important;
-		left: var(--button-position-left) !important;
-	}
+#summarize-button {
+	background: linear-gradient(#fffd, #fffd) padding-box,
+		linear-gradient(160deg, darkorange, gold, cyan, royalblue, hotpink)
+			border-box !important;
+	border-radius: 3em !important;
+	border: 2px solid transparent !important;
+	padding: 0.15em 1.5em !important;
 
-	#popover {
+	position: absolute !important;
+	top: var(--button-position-top) !important;
+	left: var(--button-position-left) !important;
+
+	&:active {
+		color: #333;
+	}
+}
+
+#popover {
+	transition: opacity 500ms, display 500ms allow-discrete,
+		overlay 500ms allow-discrete;
+}
+
+#popover:popover-open {
+	width: 60vw;
+	font-size: 1.1em;
+
+	background: linear-gradient(#fffd, #fffd) padding-box,
+		linear-gradient(160deg, darkorange, gold, cyan, royalblue, hotpink)
+			border-box;
+	border-radius: 24px;
+	border: 5px solid transparent;
+
+	padding: 15px 20px;
+
+	position: fixed;
+	inset: unset;
+	left: 0;
+	right: 0;
+	bottom: 20px;
+	margin-inline: auto;
+
+	opacity: 1;
+
+	@starting-style {
+		opacity: 0;
 	}
 }
