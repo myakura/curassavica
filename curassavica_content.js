@@ -73,6 +73,33 @@ function init() {
 	document.addEventListener('selectionchange', () => {
 		handleSelectionChange();
 	});
+
+	const debug = document.createElement('div');
+	debug.style.all = 'revert';
+	debug.style.position = 'fixed';
+	debug.style.right = '4px';
+	debug.style.bottom = '4px';
+	debug.style.border = '2px solid black';
+	debug.style.padding = '4px';
+	debug.style.display = 'grid';
+	debug.style.gap = '4px';
+	document.body.append(debug);
+
+	const debugOpen = document.createElement('button');
+	debugOpen.textContent = 'Open popover';
+	debugOpen.addEventListener('click', () => {
+		popover.textContent = `The Popover API provides developers with a standard, consistent, flexible mechanism for displaying popover content on top of other page content. Popover content can be controlled either declaratively using HTML attributes, or via JavaScript.`;
+		popover.showPopover();
+	});
+	debug.append(debugOpen);
+
+	const debugClose = document.createElement('button');
+	debugClose.textContent = 'Close popover';
+	debugClose.addEventListener('click', () => {
+		popover.textContent = '';
+		popover.hidePopover();
+	});
+	debug.append(debugClose);
 }
 
 
