@@ -7,16 +7,19 @@ function getSelectedText() {
 
 async function summarizeText(text) {
 	try {
-		const session = await window?.ai?.createTextSession();
+		const session = await LanguageModel.create();
 
-		const prompt = `
+		const prompt = {
+			role: "user",
+			content: `
 Summarize the text:
 
 user:
 ${text}
 
 ai:
-`;
+`
+		};
 
 		const response = await session.prompt(prompt);
 		return response;
