@@ -5,40 +5,31 @@ function getSelectedText() {
 	return selection.toString()?.trim();
 }
 
-async function summarizeText(text) {
-	try {
-		const session = await LanguageModel.create();
+function handleSummarizeClick() {
+    const selectedText = getSelectedText();
+    if (!selectedText) {
+        return;
+    }
+    const popover = document.querySelector('#popover');
+    popover.textContent = 'Sending to background for summarization...';
+    popover.showPopover();
 
-		const prompt = {
-			role: "user",
-			content: `
-Summarize the text:
-
-user:
-${text}
-
-ai:
-`
-		};
-
-		const response = await session.prompt(prompt);
-		return response;
-	}
-	catch (error) {
-		console.error(error);
-		return 'Error';
-	}
-}
-
-async function handleSummarizeClick() {
-	const selectedText = getSelectedText();
-	if (!selectedText) {
-		return;
-	}
-	const summary = await summarizeText(selectedText);
-	const popover = document.querySelector('#popover');
-	popover.textContent = summary;
-	popover.showPopover();
+    chrome.runtime.sendMessage(
+        { action: "summarize", text: selectedText },
+        (response) => {
+            if (chrome.runtime.lastError) {
+                console.error("Error sending message to background:", chrome.runtime.lastError.message);
+                popover.textContent = "Error: Could not connect to summarizer.";
+                return;
+            }
+            if (response && response.summary) {
+                popover.textContent = response.summary;
+            } else {
+                popover.textContent = "Error: Invalid response from summarizer or summarization failed.";
+                console.error("Invalid or missing response from background:", response);
+            }
+        }
+    );
 }
 
 function handleSelectionChange() {
@@ -70,8 +61,8 @@ function init() {
 	summarize.textContent = 'Summarize';
 	summarize.hidden = true;
 	summarize.id = 'summarize-button';
-	summarize.addEventListener('click', async () => {
-		await handleSummarizeClick();
+	summarize.addEventListener('click', () => {
+		handleSummarizeClick();
 	});
 	document.body.append(summarize);
 

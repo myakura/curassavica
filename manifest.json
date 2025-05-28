@@ -4,6 +4,9 @@
 	"version": "1.0",
 	"description": "Summarize text.",
 	"permissions": ["activeTab"],
+	"background": {
+		"service_worker": "curassavica_background.js"
+	},
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],
