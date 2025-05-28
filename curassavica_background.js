@@ -1,45 +1,42 @@
-// This is the background service worker.
-// It will be used for managing the model download and other background tasks.
-
-async function summarizeText(text) {
+async function checkModelAvailability() {
 	try {
 		const modelAvailability = await LanguageModel.availability();
-		let session;
 
 		if (modelAvailability.available === 'no') {
 			console.error("Summarization model is not available.");
 			return "Error: Summarization model is not available.";
 		} else if (modelAvailability.available === 'after-download') {
-			console.log("Model needs to be downloaded. UI will be updated.");
-			// Return a message to update UI; actual download will be triggered by a subsequent call
-			// when the user clicks again, after the model has been downloaded in the background
-			// by the first attempt to create a session.
-			// For now, we'll return the message and the session creation below will still
-			// start the download in the background if this is the first time.
-			// The next time the user clicks, availability should be 'readily'.
-			return "Downloading: Model is downloading. Please wait.";
-			// The following lines will now only be reached if we decide to change the logic
-			// to proceed with download and summarization in the same call.
-			// For this subtask, we return before this.
-			session = await LanguageModel.create({
+			console.log("Model needs to be downloaded. Attempting to start download.");
+			// This call is only to trigger the download.
+			LanguageModel.create({
 				monitor(m) {
 					m.addEventListener("downloadprogress", (e) => {
 						console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);
 					});
 				}
 			});
+			return "Status: Model downloading. Please wait.";
 		} else if (modelAvailability.available === 'readily') {
-			console.log("Model is ready. Creating session.");
-			session = await LanguageModel.create();
+			// console.log("Model is readily available."); // Optional: keep or remove this log
+			return "readily";
 		} else {
 			console.error("Unknown model availability status:", modelAvailability.available);
 			return "Error: Unknown model availability status.";
 		}
+	} catch (error) {
+		console.error("Error during model availability check:", error);
+		return "Error: Could not check model availability.";
+	}
+}
+
+async function summarizeText(text) {
+	try {
+		console.log("summarizeText called, creating session (model assumed available).");
+		const session = await LanguageModel.create();
 
 		if (!session) {
-			// This case should ideally not be reached if the above logic is correct.
-			console.error("Session creation failed unexpectedly.");
-			return "Error: Session creation failed.";
+		    console.error("Session creation failed in summarizeText.");
+		    return "Error: Failed to create summarization session.";
 		}
 
 		const prompt = {
@@ -58,15 +55,21 @@ ai:
 		return response;
 	}
 	catch (error) {
-		console.error(error);
-		return 'Error';
+		console.error("Error during summarization in summarizeText:", error);
+		return "Error: Summarization failed.";
 	}
 }
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 	if (message.action === "summarize" && message.text) {
-		const result = await summarizeText(message.text);
-		sendResponse({ summary: result });
-		return true; // Indicates that sendResponse will be called asynchronously
+		const availabilityStatus = await checkModelAvailability();
+
+		if (availabilityStatus === "readily") {
+			const summaryResult = await summarizeText(message.text);
+			sendResponse({ summary: summaryResult });
+		} else {
+			sendResponse({ summary: availabilityStatus });
+		}
 	}
+	return true; // To keep the message channel open for async sendResponse
 });

@@ -5,13 +5,13 @@ function getSelectedText() {
 	return selection.toString()?.trim();
 }
 
-function handleSummarizeClick() { // No longer async
+function handleSummarizeClick() {
     const selectedText = getSelectedText();
     if (!selectedText) {
         return;
     }
     const popover = document.querySelector('#popover');
-    popover.textContent = 'Sending to background for summarization...'; // Updated message
+    popover.textContent = 'Sending to background for summarization...';
     popover.showPopover();
 
     chrome.runtime.sendMessage(
@@ -61,8 +61,8 @@ function init() {
 	summarize.textContent = 'Summarize';
 	summarize.hidden = true;
 	summarize.id = 'summarize-button';
-	summarize.addEventListener('click', () => { // removed async
-		handleSummarizeClick(); // removed await
+	summarize.addEventListener('click', () => {
+		handleSummarizeClick();
 	});
 	document.body.append(summarize);
 
