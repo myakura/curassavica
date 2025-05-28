@@ -73,3 +73,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 	}
 	return true; // To keep the message channel open for async sendResponse
 });
+
+chrome.runtime.onInstalled.addListener(async (details) => {
+	console.log("Extension installed or updated. Reason:", details.reason);
+	const availabilityResult = await checkModelAvailability();
+	console.log("Model availability on install:", availabilityResult);
+});
