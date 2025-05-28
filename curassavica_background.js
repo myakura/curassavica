@@ -5,7 +5,8 @@ async function checkModelAvailability() {
 		if (modelAvailability.available === 'no') {
 			console.error("Summarization model is not available.");
 			return "Error: Summarization model is not available.";
-		} else if (modelAvailability.available === 'after-download') {
+		}
+		else if (modelAvailability.available === 'after-download') {
 			console.log("Model needs to be downloaded. Attempting to start download.");
 			// This call is only to trigger the download.
 			LanguageModel.create({
@@ -16,14 +17,17 @@ async function checkModelAvailability() {
 				}
 			});
 			return "Status: Model downloading. Please wait.";
-		} else if (modelAvailability.available === 'readily') {
+		}
+		else if (modelAvailability.available === 'readily') {
 			// console.log("Model is readily available."); // Optional: keep or remove this log
 			return "readily";
-		} else {
+		}
+		else {
 			console.error("Unknown model availability status:", modelAvailability.available);
 			return "Error: Unknown model availability status.";
 		}
-	} catch (error) {
+	}
+	catch (error) {
 		console.error("Error during model availability check:", error);
 		return "Error: Could not check model availability.";
 	}
@@ -35,8 +39,8 @@ async function summarizeText(text) {
 		const session = await LanguageModel.create();
 
 		if (!session) {
-		    console.error("Session creation failed in summarizeText.");
-		    return "Error: Failed to create summarization session.";
+			console.error("Session creation failed in summarizeText.");
+			return "Error: Failed to create summarization session.";
 		}
 
 		const prompt = {
@@ -67,7 +71,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 		if (availabilityStatus === "readily") {
 			const summaryResult = await summarizeText(message.text);
 			sendResponse({ summary: summaryResult });
-		} else {
+		}
+		else {
 			sendResponse({ summary: availabilityStatus });
 		}
 	}
