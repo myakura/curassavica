@@ -3,7 +3,7 @@
 	"name": "Summarizer",
 	"version": "1.0",
 	"description": "Summarize text.",
-	"permissions": ["activeTab"],
+	"permissions": ["activeTab", "aiTextSession"],
 	"background": {
 		"service_worker": "curassavica_background.js"
 	},
@@ -19,5 +19,10 @@
 			"resources": ["curassavica_content.css", "curassavica_content.js"],
 			"matches": ["<all_urls>"]
 		}
-	]
+	],
+	"ai": {
+		"models": {
+			"summarizer": {}
+		}
+	}
 }
