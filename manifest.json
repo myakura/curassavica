@@ -3,21 +3,35 @@
 	"name": "Summarizer",
 	"version": "1.0",
 	"description": "Summarize text.",
-	"permissions": ["activeTab", "aiTextSession"],
+	"permissions": [
+		"activeTab",
+		"aiTextSession"
+	],
 	"background": {
 		"service_worker": "curassavica_background.js"
 	},
 	"content_scripts": [
 		{
-			"matches": ["<all_urls>"],
-			"css": ["curassavica_content.css"],
-			"js": ["curassavica_content.js"]
+			"matches": [
+				"<all_urls>"
+			],
+			"css": [
+				"curassavica_content.css"
+			],
+			"js": [
+				"curassavica_content.js"
+			]
 		}
 	],
 	"web_accessible_resources": [
 		{
-			"resources": ["curassavica_content.css", "curassavica_content.js"],
-			"matches": ["<all_urls>"]
+			"resources": [
+				"curassavica_content.css",
+				"curassavica_content.js"
+			],
+			"matches": [
+				"<all_urls>"
+			]
 		}
 	],
 	"ai": {
