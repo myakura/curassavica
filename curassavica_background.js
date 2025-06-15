@@ -1,66 +1,48 @@
 async function checkModelAvailability() {
 	try {
-		const modelAvailability = await LanguageModel.availability();
+		const modelAvailability = await Summarizer.availability();
 
 		if (modelAvailability.available === 'no') {
-			console.error("Summarization model is not available.");
-			return "Error: Summarization model is not available.";
+			console.error("Summarizer model is not available.");
+			return "Error: Summarizer model is not available.";
 		}
 		else if (modelAvailability.available === 'after-download') {
-			console.log("Model needs to be downloaded. Attempting to start download.");
+			console.log("Summarizer model needs to be downloaded. Attempting to start download.");
 			// This call is only to trigger the download.
-			LanguageModel.create({
-				monitor(m) {
-					m.addEventListener("downloadprogress", (e) => {
-						console.log(`Downloaded ${e.loaded} of ${e.total} bytes.`);
-					});
-				}
-			});
-			return "Status: Model downloading. Please wait.";
+			Summarizer.create(); // Removed monitor as it's not supported
+			return "Status: Summarizer model downloading. Please wait.";
 		}
 		else if (modelAvailability.available === 'readily') {
-			// console.log("Model is readily available."); // Optional: keep or remove this log
+			// console.log("Summarizer model is readily available."); // Optional: keep or remove this log
 			return "readily";
 		}
 		else {
-			console.error("Unknown model availability status:", modelAvailability.available);
-			return "Error: Unknown model availability status.";
+			console.error("Unknown Summarizer model availability status:", modelAvailability.available);
+			return "Error: Unknown Summarizer model availability status.";
 		}
 	}
 	catch (error) {
-		console.error("Error during model availability check:", error);
-		return "Error: Could not check model availability.";
+		console.error("Error during Summarizer model availability check:", error);
+		return "Error: Could not check Summarizer model availability.";
 	}
 }
 
 async function summarizeText(text) {
 	try {
-		console.log("summarizeText called, creating session (model assumed available).");
-		const session = await LanguageModel.create();
+		console.log("summarizeText called, creating Summarizer session (model assumed available).");
+		const session = await Summarizer.create();
 
 		if (!session) {
-			console.error("Session creation failed in summarizeText.");
-			return "Error: Failed to create summarization session.";
+			console.error("Summarizer session creation failed in summarizeText.");
+			return "Error: Failed to create Summarizer session.";
 		}
 
-		const prompt = {
-			role: "user",
-			content: `
-Summarize the text:
-
-user:
-${text}
-
-ai:
-`
-		};
-
-		const response = await session.prompt(prompt);
+		const response = await session.summarize({ text: text, type: "tldr", length: "long" });
 		return response;
 	}
 	catch (error) {
-		console.error("Error during summarization in summarizeText:", error);
-		return "Error: Summarization failed.";
+		console.error("Error during summarization in summarizeText with Summarizer API:", error);
+		return "Error: Summarization failed with Summarizer API.";
 	}
 }
 
