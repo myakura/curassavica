@@ -1,68 +1,86 @@
-async function checkModelAvailability() {
-	try {
-		const modelAvailability = await Summarizer.availability();
+let summarizer = null;
+let availability = null;
 
-		if (modelAvailability.available === 'no') {
-			console.error("Summarizer model is not available.");
-			return "Error: Summarizer model is not available.";
+async function getOrCreateSummarizer() {
+	try {
+		const state = await Summarizer.availability();
+		availability = state.available;
+
+		switch (availability) {
+			case 'unavailable':
+				console.error("Summarizer is not available.");
+				return;
+			case 'downloadable':
+			case 'downloading':
+				if (summarizer === null) {
+					console.log(`Summarizer is ${availability}. Creating and downloading model.`);
+					summarizer = await Summarizer.create({ type: 'tldr', length: 'long' });
+					summarizer.addEventListener('downloadprogress', (e) => {
+						const percentage = e.loaded / e.total * 100;
+						console.log(`Model downloading: ${percentage.toFixed(2)}%`);
+					});
+					console.log("Waiting for model to be ready...");
+					await summarizer.ready;
+					console.log("Summarizer is ready.");
+					availability = 'available'; // Update state after download
+				}
+				break;
+			case 'available':
+				if (summarizer === null) {
+					console.log("Summarizer is available. Creating instance.");
+					summarizer = await Summarizer.create({ type: 'tldr', length: 'long' });
+				}
+				break;
 		}
-		else if (modelAvailability.available === 'after-download') {
-			console.log("Summarizer model needs to be downloaded. Attempting to start download.");
-			// This call is only to trigger the download.
-			Summarizer.create(); // Removed monitor as it's not supported
-			return "Status: Summarizer model downloading. Please wait.";
-		}
-		else if (modelAvailability.available === 'readily') {
-			// console.log("Summarizer model is readily available."); // Optional: keep or remove this log
-			return "readily";
-		}
-		else {
-			console.error("Unknown Summarizer model availability status:", modelAvailability.available);
-			return "Error: Unknown Summarizer model availability status.";
-		}
-	}
-	catch (error) {
-		console.error("Error during Summarizer model availability check:", error);
-		return "Error: Could not check Summarizer model availability.";
+	} catch (error) {
+		console.error("Error during summarizer initialization:", error);
+		availability = 'unavailable'; // Set to unavailable on error
 	}
 }
 
 async function summarizeText(text) {
-	try {
-		console.log("summarizeText called, creating Summarizer session (model assumed available).");
-		const session = await Summarizer.create();
-
-		if (!session) {
-			console.error("Summarizer session creation failed in summarizeText.");
-			return "Error: Failed to create Summarizer session.";
-		}
-
-		const response = await session.summarize({ text: text, type: "tldr", length: "long" });
-		return response;
+	if (!summarizer || availability !== 'available') {
+		console.error("Summarizer not ready or available.");
+		return "Error: Summarizer is not ready.";
 	}
-	catch (error) {
-		console.error("Error during summarization in summarizeText with Summarizer API:", error);
-		return "Error: Summarization failed with Summarizer API.";
+	try {
+		const summary = await summarizer.summarize(text);
+		return summary;
+	} catch (error) {
+		console.error("Error during summarization:", error);
+		return "Error: Summarization failed.";
 	}
 }
 
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	if (message.action === "summarize" && message.text) {
-		const availabilityStatus = await checkModelAvailability();
+		(async () => {
+			if (availability === null) {
+				// First time check, initialize the summarizer
+				await getOrCreateSummarizer();
+			}
 
-		if (availabilityStatus === "readily") {
-			const summaryResult = await summarizeText(message.text);
-			sendResponse({ summary: summaryResult });
-		}
-		else {
-			sendResponse({ summary: availabilityStatus });
-		}
+			switch (availability) {
+				case 'available':
+					const summaryResult = await summarizeText(message.text);
+					sendResponse({ summary: summaryResult });
+					break;
+				case 'downloading':
+				case 'downloadable':
+					sendResponse({ summary: "Status: Model is downloading. Please try again in a moment." });
+					break;
+				case 'unavailable':
+				default:
+					sendResponse({ summary: "Error: Summarizer model is not available." });
+					break;
+			}
+		})();
+		return true; // To keep the message channel open for async sendResponse
 	}
-	return true; // To keep the message channel open for async sendResponse
 });
 
 chrome.runtime.onInstalled.addListener(async (details) => {
 	console.log("Extension installed or updated. Reason:", details.reason);
-	const availabilityResult = await checkModelAvailability();
-	console.log("Model availability on install:", availabilityResult);
+	// Trigger initialization on install to start download if necessary.
+	getOrCreateSummarizer();
 });

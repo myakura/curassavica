@@ -1,5 +1,3 @@
-
-
 function getSelectedText() {
 	const selection = window.getSelection();
 	return selection.toString()?.trim();
@@ -8,27 +6,27 @@ function getSelectedText() {
 function handleSummarizeClick() {
 	const selectedText = getSelectedText();
 	if (!selectedText) {
-			return;
+		return;
 	}
 	const popover = document.querySelector('#popover');
 	popover.textContent = 'Sending to background for summarization...';
 	popover.showPopover();
 
 	chrome.runtime.sendMessage(
-			{ action: "summarize", text: selectedText },
-			(response) => {
-					if (chrome.runtime.lastError) {
-					    console.error("Error sending message to background:", chrome.runtime.lastError.message);
-					    popover.textContent = "Error: Could not connect to summarizer.";
-					    return;
-					}
-					if (response && response.summary) {
-					    popover.textContent = response.summary;
-					} else {
-					    popover.textContent = "Error: Invalid response from summarizer or summarization failed.";
-					    console.error("Invalid or missing response from background:", response);
-					}
+		{ action: "summarize", text: selectedText },
+		(response) => {
+			if (chrome.runtime.lastError) {
+				console.error("Error sending message to background:", chrome.runtime.lastError.message);
+				popover.textContent = "Error: Could not connect to summarizer.";
+				return;
 			}
+			if (response && response.summary) {
+				popover.textContent = response.summary;
+			} else {
+				popover.textContent = "Error: Invalid response from summarizer or summarization failed.";
+				console.error("Invalid or missing response from background:", response);
+			}
+		}
 	);
 }
 
