@@ -17,13 +17,16 @@ function handleSummarizeClick() {
 		(response) => {
 			if (chrome.runtime.lastError) {
 				console.error("Error sending message to background:", chrome.runtime.lastError.message);
-				popover.textContent = "Error: Could not connect to summarizer.";
+				popover.textContent = "Error: Could not connect to the background script.";
 				return;
 			}
-			if (response && response.summary) {
+			if (response && response.error) {
+				console.error("Received error from background:", response.error);
+				popover.textContent = `Error: ${response.error}`;
+			} else if (response && response.summary) {
 				popover.textContent = response.summary;
 			} else {
-				popover.textContent = "Error: Invalid response from summarizer or summarization failed.";
+				popover.textContent = "Error: Received an invalid response from the background script.";
 				console.error("Invalid or missing response from background:", response);
 			}
 		}
